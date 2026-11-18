@@ -1,4 +1,4 @@
-import { VERSION, COLS, HOP, FERRY_TIME, MODES, CHARACTERS, createRun, move, collect, tick, physicalPosition, hazardPositions, locationName } from "./rules.js";
+import { VERSION, COLS, HOP, FERRY_TIME, MODES, CHARACTERS, createRun, move, collect, tick, physicalPosition, hazardPositions, locationName } from "./rules.js?v=1.1";
 
 const $ = selector => document.querySelector(selector);
 const canvas = $("#game");
