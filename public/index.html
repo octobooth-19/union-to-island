@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e9f2e7">
+  <meta name="description" content="A little hop. A big Toronto adventure. Pick your coding critter and cross the city from Union Station to Toronto Island.">
+  <title>Union to Island — A Toronto crossing adventure</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body data-state="home">
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="Union to Island home"><span class="brand-mark" aria-hidden="true">&lt;/&gt;</span><span>union <i>to</i> island<span class="brand-dot">.</span></span></a>
+    <div class="header-right"><span class="location-tag"><span></span> MADE FOR A LITTLE ESCAPE</span><button class="icon-button" id="sound" aria-label="Turn sound on" aria-pressed="false">Sound off</button></div>
+  </header>
+  <main class="layout">
+    <aside class="sidebar">
+      <section id="intro">
+        <div class="eyebrow"><span class="tiny-line"></span> A TORONTO CROSSING ADVENTURE</div>
+        <h1>A little hop.<br> A big <span>city escape.</span></h1>
+        <p class="lede">Trade the downtown rush for an island breeze. Your next adventure is just across the street.</p>
+        <div class="section-label"><h2>01 <span>Pick your little commuter</span></h2><span id="character-count">1 / 4</span></div>
+        <div class="characters" id="characters" role="group" aria-label="Choose a character"></div>
+        <div class="character-caption"><strong id="character-name">Patch the Raccoon</strong><span id="character-detail">The night-shift debugger</span></div>
+        <div class="section-label"><h2>02 <span>Choose your pace</span></h2></div>
+        <div class="difficulties" id="difficulties" role="group" aria-label="Choose difficulty">
+          <button class="difficulty selected" data-mode="easy" aria-pressed="true"><span class="mode-symbol">I</span><span><strong>Easy</strong><small>Sunday stroll</small></span><b>~1 min</b></button>
+          <button class="difficulty" data-mode="medium" aria-pressed="false"><span class="mode-symbol">II</span><span><strong>Medium</strong><small>The daily commute</small></span><b>~3 min</b></button>
+          <button class="difficulty" data-mode="hard" aria-pressed="false"><span class="mode-symbol">III</span><span><strong>Hard</strong><small>Rush-hour hero</small></span><b>~5 min</b></button>
+        </div>
+        <button id="start" class="primary">Let's catch that ferry <span aria-hidden="true">&#8599;</span></button>
+        <p class="start-note">FREE TO PLAY <span>&middot;</span> NO DOWNLOAD <span>&middot;</span> JUST GOOD HOPS</p>
+      </section>
+      <section id="journey" hidden>
+        <div class="eyebrow">YOUR LITTLE GREAT ESCAPE</div>
+        <h1>Island<br><span>state of mind.</span></h1>
+        <p class="lede" id="journey-description">One safe crossing at a time.</p>
+        <div class="route-list" aria-label="Journey landmarks">
+          <div class="route-stop active" data-progress="0"><b>01</b><span>Union Station<small>Where the adventure begins</small></span></div>
+          <div class="route-stop" data-progress="0.12"><b>02</b><span>Bay Street<small>Mind the downtown rush</small></span></div>
+          <div class="route-stop" data-progress="0.53"><b>03</b><span>Harbour Street<small>Getting closer to the breeze</small></span></div>
+          <div class="route-stop" data-progress="0.78"><b>04</b><span>Queens Quay<small>One last crossing</small></span></div>
+          <div class="route-stop" data-progress="1"><b>05</b><span>Toronto Island<small>Your well-earned escape</small></span></div>
+        </div>
+        <div class="vendor-tip"><span class="tip-icon" aria-hidden="true">+</span><div><strong>A snack goes a long way.</strong><p>Stop at a striped cart for a shield or an extra life. Look for the Collect button.</p></div></div>
+        <button id="new-trip" class="secondary">Choose a new adventure</button>
+      </section>
+      <div class="sidebar-bottom"><button id="open-board" class="text-button">Today's island arrivals <span aria-hidden="true">&#8599;</span></button><span class="small-tag">TORONTO, ON</span></div>
+    </aside>
+    <section class="game-shell" aria-label="Toronto game">
+      <div class="game-topbar"><div class="map-label"><span class="live-dot"></span><span id="place">UNION STATION</span></div><div class="map-weather"><span aria-hidden="true">&#9728;</span> A GOOD DAY TO GET OUTSIDE</div><button id="pause" class="icon-button" hidden aria-label="Pause game">Pause</button></div>
+      <div class="stage" id="stage">
+        <canvas id="game" aria-label="Toronto crossing game. Swipe or use arrow keys to hop; use Collect near a vendor."></canvas>
+        <div class="postcard" id="postcard"><span>YOUR DESTINATION</span><strong>Less rush.<br>More island.</strong><span class="postcard-coordinates">43.6205&deg; N &nbsp; 79.3780&deg; W</span></div>
+        <div class="hud" id="hud" hidden><div class="life-pill"><span id="hearts" aria-label="5 lives"></span><span id="clock">0:00</span></div><div class="shield-pill" id="shield" hidden></div></div>
+        <div class="map-pin" id="home-pin"><span>YOU ARE HERE</span><strong>Union Station</strong></div>
+        <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+        <div class="progress-hud" id="progress-hud" hidden><span>UNION</span><div class="progress-track"><div id="progress-fill"></div></div><span>ISLAND</span></div>
+        <div class="preview-badge" id="preview-badge"><span aria-hidden="true">&#8593;</span> A whole city between you and the weekend.</div>
+      </div>
+      <div class="game-bottom">
+        <div class="controls-hint"><span class="key-cap">&#8593;</span><span>Arrow keys or <b>swipe</b> to hop</span><span class="hint-divider"></span><span><span class="shield-dot"></span> Find a vendor. Get a little boost.</span></div>
+        <div class="touch-controls" id="touch-controls" hidden aria-label="Game controls">
+          <div class="dpad"><button data-move="0,1" class="up" aria-label="Hop forward">&#8593;</button><button data-move="-1,0" class="left" aria-label="Hop left">&#8592;</button><button data-move="0,-1" class="down" aria-label="Hop backward">&#8595;</button><button data-move="1,0" class="right" aria-label="Hop right">&#8594;</button></div>
+          <div class="touch-actions"><button id="collect" class="collect" disabled>Collect <span>near a cart</span></button><button id="mobile-pause" class="text-button">Pause</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><span>A small adventure. A very Toronto kind of day.</span><span>Original critters. Real city. <button id="about">About &amp; privacy</button></span></footer>
+
+  <dialog id="modal" aria-labelledby="modal-title">
+    <form method="dialog"><button class="close-modal" aria-label="Close dialog">X</button></form>
+    <div id="modal-content"></div>
+  </dialog>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
