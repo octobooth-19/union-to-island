@@ -13,11 +13,14 @@ vendor carts for a shield or an extra life; board the ferry to win.
 The `.github/workflows/pages.yml` workflow republishes `public/` on every push
 to `main`. GitHub Pages is static, so trips there are **unranked** (the game
 says so on start). The public leaderboard goes live once the Cloudflare
-deployment below is completed. Then the QR code can be pointed at that URL instead.
+deployment below is completed. The current QR code will still open GitHub Pages;
+generate a new QR code for the Cloudflare URL when that deployment is ready.
 
-QR code: scan the `union-to-island-qr.png` code delivered with this project (it encodes the
-URL above). To regenerate it on macOS without downloads, use CoreImage's
-`CIQRCodeGenerator`, or use Chrome's **Share → Create QR code** on the live page.
+The [print-ready QR code](https://raw.githubusercontent.com/octobooth-19/union-to-island/main/union-to-island-qr.png)
+encodes the GitHub Pages URL above and includes a four-module white border. Verify
+it with real phones at its intended print size. To generate another code, use
+CoreImage's `CIQRCodeGenerator` on macOS or Chrome's **Share → Create QR code**
+on the deployed page.
 
 ## Run locally
 
