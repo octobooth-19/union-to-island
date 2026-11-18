@@ -4,7 +4,7 @@ import { MODES, HOP, FERRY_TIME, createRun, createRoute, move, tick, collect, se
 import { solveRoute } from "../scripts/route-solver.js";
 
 test("one orthogonal hop, world boundaries, and cosmetic characters", () => {
-  const run = createRun("easy", 1, "maple");
+  const run = createRun("easy", 1, "ace");
   assert.equal(move(run, 1, 1), false);
   assert.equal(move(run, 0.5, 0.5), false);
   assert.equal(move(run, 0, -1), false);
@@ -14,7 +14,7 @@ test("one orthogonal hop, world boundaries, and cosmetic characters", () => {
   assert.equal(run.row, 1);
   assert.equal(run.hopLeft, 0);
   assert.deepEqual(physicalPosition(run), { x: 4, row: 1 });
-  assert.equal(createRun("easy", 1, "byte").lives, run.lives);
+  assert.equal(createRun("easy", 1, "bolt").lives, run.lives);
   run.x = 0;
   assert.equal(move(run, -1, 0), false);
 });

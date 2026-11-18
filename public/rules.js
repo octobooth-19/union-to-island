@@ -8,10 +8,10 @@ export const MODES = Object.freeze({
   hard: { label: "Hard", minutes: 5, rows: 390, lives: 2, speed: 2.25, spacing: 4.8, shield: 4, vendorEvery: 39 },
 });
 export const CHARACTERS = Object.freeze([
-  { id: "patch", name: "Patch", species: "Raccoon", color: "#899caa", detail: "The night-shift debugger" },
-  { id: "byte", name: "Byte", species: "Beaver", color: "#ba8157", detail: "Builds things that last" },
-  { id: "pip", name: "Pip", species: "Pigeon", color: "#9b97c5", detail: "Always ships on the fly" },
-  { id: "maple", name: "Maple", species: "Fox", color: "#ee955c", detail: "Quick on their paws" },
+  { id: "kit", name: "Kit", species: "Code Cat", color: "#2da44e", detail: "Ships pull requests in a green hoodie" },
+  { id: "ducky", name: "Ducky", species: "Debug Duck", color: "#f4c542", detail: "Listens until the bug confesses" },
+  { id: "bolt", name: "Bolt", species: "Chat Bot", color: "#9aa7b4", detail: "Automates the boring crossings" },
+  { id: "ace", name: "Ace", species: "Co-Pilot", color: "#6e56cf", detail: "Goggles on, suggestions ready" },
 ]);
 
 export function randomGenerator(seed) {
@@ -67,7 +67,7 @@ export function locationName(progress) {
   return "Jack Layton Ferry Terminal";
 }
 
-export function createRun(mode = "easy", seed = 1, character = "patch") {
+export function createRun(mode = "easy", seed = 1, character = "kit") {
   if (!CHARACTERS.some(item => item.id === character)) throw new RangeError("Unknown character");
   const route = createRoute(mode, seed);
   return {

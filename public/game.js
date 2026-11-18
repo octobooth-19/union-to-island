@@ -14,7 +14,7 @@ try { prefs = JSON.parse(localStorage.getItem("union-prefs") || "{}"); } catch (
   console.warn("Local preferences are unavailable:", error.message);
 }
 if (!prefs || typeof prefs !== "object" || Array.isArray(prefs)) prefs = {};
-let character = CHARACTERS.some(c => c.id === prefs.character) ? prefs.character : "patch";
+let character = CHARACTERS.some(c => c.id === prefs.character) ? prefs.character : "kit";
 let mode = Object.hasOwn(MODES, prefs.mode) ? prefs.mode : "easy";
 let run = null;
 let token = null;
@@ -91,62 +91,76 @@ function animal(id, x, y, size, hop = 0, protectedState = false) {
     ctx.lineWidth = 0.045;
     ctx.beginPath(); ctx.ellipse(0, -0.3, 0.51, 0.63, 0, 0, Math.PI * 2); ctx.stroke();
   }
-  if (id === "pip") {
-    ellipse(-0.02, -0.19, 0.28, 0.34, "#8c87b1");
-    ellipse(-0.17, -0.17, 0.11, 0.22, "#696a90");
-    ellipse(0.17, -0.17, 0.11, 0.22, "#696a90");
-    ellipse(0, -0.59, 0.25, 0.26, "#ada9cb");
-    round(-0.23, -0.48, 0.46, 0.1, 0.04, "#6d9d97");
-    polygon([[0, -0.49], [-0.08, -0.58], [0.08, -0.58]], "#e5b253");
-    round(-0.29, -0.7, 0.08, 0.25, 0.03, "#39564f");
-    round(0.21, -0.7, 0.08, 0.25, 0.03, "#39564f");
-    ctx.strokeStyle = "#39564f"; ctx.lineWidth = 0.055;
-    ctx.beginPath(); ctx.arc(0, -0.61, 0.26, Math.PI, 0); ctx.stroke();
+  let defaultEyes = true;
+  if (id === "ducky") {
+    ellipse(0.02, -0.16, 0.32, 0.27, "#f4c542");
+    polygon([[0.26, -0.3], [0.42, -0.42], [0.3, -0.18]], "#f4c542");
+    ellipse(-0.08, -0.18, 0.15, 0.1, "#e3ac2c");
+    round(-0.16, 0.0, 0.09, 0.08, 0.03, "#e7873a");
+    round(0.08, 0.0, 0.09, 0.08, 0.03, "#e7873a");
+    ellipse(0, -0.58, 0.25, 0.25, "#f7cf55");
+    ellipse(0, -0.48, 0.15, 0.06, "#e7873a");
+    ellipse(0, -0.45, 0.12, 0.04, "#cf6f2a");
+    polygon([[-0.22, -0.37], [0.22, -0.37], [0, -0.26]], "#3b6fb6");
+    ellipse(-0.17, -0.5, 0.05, 0.03, "#f2a48f");
+    ellipse(0.17, -0.5, 0.05, 0.03, "#f2a48f");
+  } else if (id === "bolt") {
+    defaultEyes = false;
+    round(-0.24, -0.34, 0.48, 0.36, 0.08, "#9aa7b4");
+    round(-0.15, -0.28, 0.3, 0.2, 0.04, "#2f3d4a");
+    text("< >", 0, -0.13, 0.12, "#7fe3d4", "700");
+    round(-0.2, -0.02, 0.13, 0.12, 0.03, "#5b6977");
+    round(0.07, -0.02, 0.13, 0.12, 0.03, "#5b6977");
+    round(-0.34, -0.3, 0.1, 0.22, 0.04, "#7d8a97");
+    round(0.24, -0.3, 0.1, 0.22, 0.04, "#7d8a97");
+    ctx.strokeStyle = "#5b6977"; ctx.lineWidth = 0.035;
+    ctx.beginPath(); ctx.moveTo(0, -0.84); ctx.lineTo(0, -0.97); ctx.stroke();
+    ellipse(0, -0.99, 0.05, 0.05, "#e5625c");
+    round(-0.3, -0.85, 0.6, 0.48, 0.14, "#c4ced8");
+    round(-0.24, -0.72, 0.48, 0.18, 0.09, "#24313d");
+    ellipse(-0.11, -0.63, 0.055, 0.05, "#7fe3d4");
+    ellipse(0.11, -0.63, 0.055, 0.05, "#7fe3d4");
+    round(-0.09, -0.48, 0.18, 0.04, 0.02, "#7d8a97");
+  } else if (id === "ace") {
+    defaultEyes = false;
+    round(-0.25, -0.34, 0.5, 0.36, 0.14, "#6e56cf");
+    polygon([[-0.2, -0.36], [0.2, -0.36], [0.26, -0.18], [0.04, -0.27]], "#e5625c");
+    round(-0.2, -0.02, 0.13, 0.12, 0.04, "#3f2f86");
+    round(0.07, -0.02, 0.13, 0.12, 0.04, "#3f2f86");
+    ellipse(0, -0.6, 0.31, 0.28, "#1f2430");
+    ellipse(-0.3, -0.58, 0.07, 0.1, "#6e56cf");
+    ellipse(0.3, -0.58, 0.07, 0.1, "#6e56cf");
+    round(-0.27, -0.73, 0.54, 0.05, 0.02, "#8f7a5a");
+    round(-0.25, -0.72, 0.23, 0.18, 0.08, "#b9a37a");
+    round(0.02, -0.72, 0.23, 0.18, 0.08, "#b9a37a");
+    round(-0.21, -0.68, 0.16, 0.11, 0.05, "#bfeaf5");
+    round(0.06, -0.68, 0.16, 0.11, 0.05, "#bfeaf5");
+    ellipse(-0.12, -0.62, 0.03, 0.035, "#1c3432");
+    ellipse(0.12, -0.62, 0.03, 0.035, "#1c3432");
+    ctx.strokeStyle = "#e9edf5"; ctx.lineWidth = 0.03;
+    ctx.beginPath(); ctx.arc(0, -0.47, 0.08, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
   } else {
-    const fox = id === "maple";
-    const beaver = id === "byte";
-    const color = fox ? "#e59a62" : beaver ? "#ad7958" : "#8a9b9f";
-    if (beaver) {
-      ellipse(0.29, 0, 0.16, 0.3, "#795742");
-      ctx.strokeStyle = "#654b3a"; ctx.lineWidth = 0.02;
-      for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(0.18, -0.13 + i * 0.08); ctx.lineTo(0.4, -0.04 + i * 0.08); ctx.stroke(); }
-    } else {
-      ctx.save(); ctx.translate(0.24, -0.01); ctx.rotate(-0.6);
-      round(0, -0.12, 0.36, 0.2, 0.1, color);
-      round(fox ? 0.25 : 0.05, -0.12, 0.07, 0.2, 0.02, fox ? "#fff2d6" : "#455459");
-      if (!fox) round(0.21, -0.12, 0.07, 0.2, 0.02, "#455459");
-      ctx.restore();
-    }
-    ellipse(0, -0.17, 0.27, 0.31, color);
-    round(-0.23, -0.01, 0.14, 0.17, 0.05, "#344c49");
-    round(0.09, -0.01, 0.14, 0.17, 0.05, "#344c49");
-    if (fox) {
-      polygon([[-0.24, -0.57], [-0.25, -0.98], [-0.04, -0.75]], color);
-      polygon([[0.24, -0.57], [0.25, -0.98], [0.04, -0.75]], color);
-      polygon([[-0.2, -0.7], [-0.2, -0.88], [-0.1, -0.74]], "#7b5144");
-      polygon([[0.2, -0.7], [0.2, -0.88], [0.1, -0.74]], "#7b5144");
-    } else {
-      ellipse(-0.22, -0.75, beaver ? 0.1 : 0.12, beaver ? 0.1 : 0.14, color);
-      ellipse(0.22, -0.75, beaver ? 0.1 : 0.12, beaver ? 0.1 : 0.14, color);
-      ellipse(-0.22, -0.75, 0.06, 0.07, "#556560");
-      ellipse(0.22, -0.75, 0.06, 0.07, "#556560");
-    }
-    ellipse(0, -0.56, 0.3, 0.27, color);
-    if (!fox && !beaver) {
-      ellipse(-0.13, -0.58, 0.14, 0.1, "#3d4d51");
-      ellipse(0.13, -0.58, 0.14, 0.1, "#3d4d51");
-    }
-    ellipse(0, -0.45, fox ? 0.23 : 0.16, 0.12, "#eee7d4");
-    if (beaver) round(-0.055, -0.43, 0.11, 0.08, 0.015, "#fffae9");
-    ellipse(0, -0.49, 0.045, 0.032, "#334640");
-    if (fox) round(-0.24, -0.32, 0.48, 0.09, 0.03, "#518b78");
-    else round(-0.18, -0.25, 0.36, 0.2, 0.035, "#507e72");
-    if (!fox) text("< >", 0, -0.11, 0.105, "#dcefd3");
+    ctx.strokeStyle = "#2b2f36"; ctx.lineWidth = 0.08; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(0.2, -0.08); ctx.quadraticCurveTo(0.45, -0.1, 0.38, -0.36); ctx.stroke();
+    round(-0.25, -0.36, 0.5, 0.38, 0.14, "#2da44e");
+    round(-0.11, -0.2, 0.22, 0.1, 0.04, "#238636");
+    text("{ }", 0, -0.1, 0.1, "#dafbe1", "700");
+    round(-0.2, -0.02, 0.13, 0.12, 0.05, "#2b2f36");
+    round(0.07, -0.02, 0.13, 0.12, 0.05, "#2b2f36");
+    polygon([[-0.29, -0.62], [-0.27, -0.92], [-0.08, -0.79]], "#2b2f36");
+    polygon([[0.29, -0.62], [0.27, -0.92], [0.08, -0.79]], "#2b2f36");
+    ellipse(0, -0.59, 0.31, 0.27, "#2b2f36");
+    ellipse(0, -0.55, 0.23, 0.17, "#f3cdb6");
+    ellipse(0, -0.48, 0.035, 0.025, "#c97a6a");
+    ellipse(-0.17, -0.5, 0.045, 0.025, "#f0a993");
+    ellipse(0.17, -0.5, 0.045, 0.025, "#f0a993");
   }
-  ellipse(-0.12, -0.61, 0.025, 0.037, "#1c3432");
+  if (defaultEyes) {
+    ellipse(-0.12, -0.61, 0.025, 0.037, "#1c3432");
   ellipse(0.12, -0.61, 0.025, 0.037, "#1c3432");
   ellipse(-0.127, -0.62, 0.008, 0.012, "#fffdf1");
   ellipse(0.113, -0.62, 0.008, 0.012, "#fffdf1");
+  }
   ctx.restore();
 }
 
@@ -623,7 +637,7 @@ async function showBoard(selectedMode = mode) {
 }
 function finishResultAgain() { renderResult(); }
 $("#open-board").onclick = () => showBoard();
-$("#about").onclick = () => showModal("about", `<div class="eyebrow">SMALL GAME. OPEN SKIES.</div><h2 id="modal-title">Made for a little escape.</h2><div class="privacy-copy"><p>Union to Island is an original Toronto crossing game. Patch, Byte, Pip, and Maple are original developer-themed animals, not GitHub or Crossy Road characters. No affiliation or endorsement is implied.</p><p>Sound and illustrations are generated in the browser. No external fonts, ads, analytics, location permission, or sign-in.</p><p>Settings and personal bests stay in this browser when storage is available. If you choose to submit a winning run, the public board stores a generated nickname, difficulty, time, collisions, and remaining lives. Results become eligible for removal after 30 days and are deleted during maintenance.</p><p>The server uses short-lived hashed network identifiers to limit abuse. Hosting providers may retain standard request/security logs under their own policies. Don't enter personal information; nicknames are generated for you.</p><p>Route times are targets, not deadlines. This is a compressed arcade map, not walking directions. First-time loading and public scores need internet.</p></div>`);
+$("#about").onclick = () => showModal("about", `<div class="eyebrow">SMALL GAME. OPEN SKIES.</div><h2 id="modal-title">Made for a little escape.</h2><div class="privacy-copy"><p>Union to Island is an original Toronto crossing game. Kit, Ducky, Bolt, and Ace are original developer-themed characters inspired by the friendly spirit of GitHub-style mascots. They are not GitHub, Octocat, or Crossy Road characters. No affiliation or endorsement is implied.</p><p>Sound and illustrations are generated in the browser. No external fonts, ads, analytics, location permission, or sign-in.</p><p>Settings and personal bests stay in this browser when storage is available. If you choose to submit a winning run, the public board stores a generated nickname, difficulty, time, collisions, and remaining lives. Results become eligible for removal after 30 days and are deleted during maintenance.</p><p>The server uses short-lived hashed network identifiers to limit abuse. Hosting providers may retain standard request/security logs under their own policies. Don't enter personal information; nicknames are generated for you.</p><p>Route times are targets, not deadlines. This is a compressed arcade map, not walking directions. First-time loading and public scores need internet.</p></div>`);
 
 function updateHud() {
   if (!run) return;

@@ -1,8 +1,11 @@
 # Original artwork and notices
 
-- Patch the Raccoon, Byte the Beaver, Pip the Pigeon, and Maple the Fox are
-  original character designs drawn programmatically in `public/game.js`.
-  Their shared theme is friendly city animals with developer accessories.
+- Kit the Code Cat, Ducky the Debug Duck, Bolt the Chat Bot, and Ace the
+  Co-Pilot are original character designs drawn programmatically in
+  `public/game.js`. They evoke the general developer-mascot style (a hoodie
+  cat, rubber-duck debugging, a helper robot, a goggled pilot) without
+  copying protected artwork: Kit deliberately has a normal cat tail, not
+  octopus arms, and no GitHub logo or names are used.
   No GitHub, Octocat, or Octodex artwork is included or modified.
 - All scenery, cars, bicycles, pedestrians, carts, ferry, favicon, and landmark
   illustrations are original programmatic drawings created for this project.

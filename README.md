@@ -1,9 +1,23 @@
 # Union to Island
 
-An original, dependency-free Toronto crossing game: choose Patch the Raccoon,
-Byte the Beaver, Pip the Pigeon, or Maple the Fox, then travel from Union
+An original, dependency-free Toronto crossing game: choose Kit the Code Cat,
+Ducky the Debug Duck, Bolt the Chat Bot, or Ace the Co-Pilot (original
+characters styled after GitHub-type developer mascots), then travel from Union
 Station to Toronto Island. Cross cars, bikes, and pedestrians; visit striped
 vendor carts for a shield or an extra life; board the ferry to win.
+
+## Play now
+
+**Live (free, GitHub Pages):** <https://octobooth-19.github.io/union-to-island/>
+
+The `.github/workflows/pages.yml` workflow republishes `public/` on every push
+to `main`. GitHub Pages is static, so trips there are **unranked** (the game
+says so on start). The public leaderboard goes live once the Cloudflare
+deployment below is completed. Then the QR code can be pointed at that URL instead.
+
+QR code: scan the `union-to-island-qr.png` code delivered with this project (it encodes the
+URL above). To regenerate it on macOS without downloads, use CoreImage's
+`CIQRCodeGenerator`, or use Chrome's **Share → Create QR code** on the live page.
 
 ## Run locally
 
@@ -68,8 +82,9 @@ static game files, a bundled ES-module `_worker.js`, `_routes.json` limited to
 
 ## Free public deployment: Cloudflare Pages + D1
 
-**Status:** source and upload bundle are prepared; no public hosting account,
-database, production URL, or production QR is provisioned by this project.
+**Status:** the unranked static game is live on GitHub Pages (above). The
+Cloudflare upload bundle for the ranked version is prepared but needs a
+Cloudflare account to deploy.
 
 1. Sign in to an authorized Cloudflare account on its free plan. Create a D1
    database, then execute `migrations/0001_leaderboard.sql` in its SQL console.
