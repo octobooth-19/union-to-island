@@ -1,4 +1,5 @@
-import { VERSION, COLS, HOP, FERRY_TIME, MODES, CHARACTERS, createRun, move, collect, tick, physicalPosition, hazardPositions, locationName } from "./rules.js?v=1.1";
+import { COLS, HOP, FERRY_TIME, MODES, CHARACTERS, createRun, move, collect, tick, physicalPosition, hazardPositions, locationName } from "./rules.js?v=1.2";
+import { createLeaderboard } from "./leaderboard.js?v=1.2";
 
 const $ = selector => document.querySelector(selector);
 const canvas = $("#game");
@@ -16,10 +17,9 @@ try { prefs = JSON.parse(localStorage.getItem("union-prefs") || "{}"); } catch (
 if (!prefs || typeof prefs !== "object" || Array.isArray(prefs)) prefs = {};
 let character = CHARACTERS.some(c => c.id === prefs.character) ? prefs.character : "kit";
 let mode = Object.hasOwn(MODES, prefs.mode) ? prefs.mode : "easy";
+const leaderboard = createLeaderboard();
 let run = null;
-let token = null;
 let active = false;
-let starting = false;
 let ended = false;
 let lastFrame = 0;
 let accumulator = 0;
@@ -31,9 +31,7 @@ let audio = null;
 let sound = !!prefs.sound;
 let pointer = null;
 let buffer = null;
-let boardSequence = 0;
-let networkNotice = "";
-let submittedName = "";
+let resultNotice = "";
 let modalKind = "";
 let uiSecond = -1;
 const terrain = { road: "#747d78", bike: "#b1c8b3", sidewalk: "#dfdfce", people: "#d8d9c7", park: "#bdd1a6", plaza: "#e5e0cb" };
@@ -46,7 +44,7 @@ function savePrefs() {
   try { localStorage.setItem("union-prefs", JSON.stringify(prefs)); } catch (error) {
     storage = false;
     console.warn("Could not save local preferences:", error.message);
-    if (run) { run.message = "Local storage unavailable. Records last for this visit only."; run.messageLeft = 4; }
+    if (run) { run.message = "Could not save your settings in this browser."; run.messageLeft = 4; }
   }
 }
 
@@ -475,7 +473,7 @@ function showModal(kind, html) {
 }
 function closeModal() { if (dialog.open) dialog.close(); modalKind = ""; }
 dialog.addEventListener("close", () => {
-  if (!run || starting) return;
+  if (!run) return;
   if (!ended && !active && modalKind !== "tutorial") showResume();
   else if (ended) finishResultAgain();
 });
@@ -483,33 +481,10 @@ dialog.addEventListener("cancel", event => {
   if (run && !ended && !active) { event.preventDefault(); if (modalKind !== "tutorial") showResume(); }
 });
 
-async function api(path, body) {
-  const response = await fetch(`./api/${path}`, { method: body ? "POST" : "GET", headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(6000), credentials: "same-origin" });
-  if (!(response.headers.get("content-type") || "").includes("application/json")) throw new Error("leaderboard server is not connected on this host");
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || `Leaderboard request failed (${response.status})`);
-  return data;
-}
-
-async function startRun() {
-  if (starting) return;
-  starting = true;
-  $("#start").disabled = true;
-  $("#start").textContent = "Finding your route...";
+function startRun() {
   closeModal();
-  networkNotice = "";
-  submittedName = "";
-  let seed;
-  token = null;
-  try {
-    const ticket = await api("runs", { mode, version: VERSION });
-    seed = ticket.seed;
-    token = ticket.token;
-  } catch (error) {
-    console.warn("Starting an unranked run:", error.message);
-    networkNotice = `Public ranking unavailable: ${error.message}. This trip is unranked.`;
-    seed = crypto.getRandomValues(new Uint32Array(1))[0];
-  }
+  resultNotice = "";
+  const seed = crypto.getRandomValues(new Uint32Array(1))[0];
   run = createRun(mode, seed, character);
   active = false; ended = false; camera = 0; accumulator = 0; buffer = null; uiSecond = -1;
   document.body.dataset.state = "playing";
@@ -517,16 +492,13 @@ async function startRun() {
   $("#postcard").hidden = true; $("#home-pin").hidden = true; $("#preview-badge").hidden = true;
   $("#hud").hidden = false; $("#pause").hidden = false; $("#progress-hud").hidden = false; $("#touch-controls").hidden = false;
   $("#journey-description").textContent = `${MODES[mode].label} pace. About ${MODES[mode].minutes} minute${MODES[mode].minutes > 1 ? "s" : ""}. One safe crossing at a time.`;
-  starting = false; $("#start").disabled = false; $("#start").innerHTML = 'Let\'s catch that ferry <span aria-hidden="true">&#8599;</span>';
-  showModal("tutorial", `<div class="eyebrow">YOUR ISLAND FIELD GUIDE</div><h2 id="modal-title">A few good hops.</h2><ul class="rules-list"><li>Swipe or use the arrow buttons to hop. Desktop? Arrow keys or WASD.</li><li>Wait for gaps in cars, bikes, and people. A bump costs one life.</li><li>Striped carts give shields or +1 life. Get close and tap Collect (or E).</li><li>Reach the ferry, then sail to Toronto Island to win.</li></ul><p>About ${MODES[mode].minutes} minute${MODES[mode].minutes > 1 ? "s" : ""}, not a countdown. Take your time.</p><div class="board-status">${networkNotice ? escapeHtml(networkNotice) : "Daily route ready. You can submit to the casual board after winning."}${storage ? "" : " Local storage unavailable: records last for this visit."}</div><button class="primary" id="begin">Got it. Island, here I come! <span>&#8599;</span></button>`);
+  showModal("tutorial", `<div class="eyebrow">YOUR ISLAND FIELD GUIDE</div><h2 id="modal-title">A few good hops.</h2><ul class="rules-list"><li>Swipe or use the arrow buttons to hop. Desktop? Arrow keys or WASD.</li><li>Wait for gaps in cars, bikes, and people. A bump costs one life.</li><li>Striped carts give shields or +1 life. Get close and tap Collect (or E).</li><li>Reach the ferry, then sail to Toronto Island to win.</li></ul><p>About ${MODES[mode].minutes} minute${MODES[mode].minutes > 1 ? "s" : ""}, not a countdown. Take your time.</p><div class="board-status">${leaderboard.persistent ? "Winning trips are saved on this browser only, not shared with other players." : "Browser storage is unavailable. Scores will last for this visit only."}</div><button class="primary" id="begin">Got it. Island, here I come! <span>&#8599;</span></button>`);
   $("#begin").onclick = () => { active = true; closeModal(); beep(660); canvas.focus(); };
   updateHud();
 }
 
-function escapeHtml(value) {
-  const span = document.createElement("span"); span.textContent = String(value); return span.innerHTML;
-}
 function formatTime(seconds) { return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`; }
+function formatScore(milliseconds) { return `${formatTime(milliseconds / 1000)}.${String(milliseconds % 1000).padStart(3, "0")}`; }
 
 function attemptMove(dx, dy) {
   if (!active || !run || run.status !== "running" || dialog.open) return;
@@ -566,7 +538,7 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) pause
 window.addEventListener("blur", pause);
 
 function home() {
-  active = false; run = null; token = null; ended = false; buffer = null;
+  active = false; run = null; ended = false; buffer = null;
   closeModal(); document.body.dataset.state = "home";
   $("#intro").hidden = false; $("#journey").hidden = true;
   for (const id of ["postcard", "home-pin", "preview-badge"]) $(`#${id}`).hidden = false;
@@ -580,6 +552,19 @@ function finish() {
   ended = true; active = false; document.body.dataset.state = "finished";
   const won = run.status === "won";
   if (won) {
+    const result = leaderboard.add(run.mode, {
+      character: run.character,
+      elapsed: Math.round(run.elapsed * 1000),
+      collisions: run.collisions,
+      lives: run.lives,
+      completedAt: Date.now(),
+    });
+    resultNotice = result.rank === null
+      ? "This trip did not reach this browser's top 20."
+      : `Your arrival is #${result.rank} on this browser's ${MODES[run.mode].label} leaderboard.`;
+    resultNotice += result.persistent
+      ? " Scores are saved on this browser only."
+      : " Browser storage is unavailable; scores last for this visit only.";
     const key = `best-${mode}`;
     if (!Number.isFinite(prefs[key]) || run.elapsed < prefs[key]) { prefs[key] = run.elapsed; savePrefs(); }
     beep(790, 0.3);
@@ -589,55 +574,42 @@ function finish() {
 
 function renderResult() {
   const won = run.status === "won";
-  showModal("result", `<div class="eyebrow">${won ? "YOU MADE IT TO TORONTO ISLAND" : "EVERY COMMUTER HAS THOSE DAYS"}</div><h2 id="modal-title">${won ? "Hello, island time." : "One more little hop?"}</h2><p>${won ? "The skyline's behind you. The whole afternoon's ahead." : "A little bump in the road. Pick yourself up and try the trip again."}</p><div class="modal-stat-grid"><div><strong>${formatTime(run.elapsed)}</strong><span>Active time</span></div><div><strong>${won ? run.lives : `${Math.floor(run.maxRow / MODES[mode].rows * 100)}%`}</strong><span>${won ? "Lives left" : "Route reached"}</span></div><div><strong>${run.collisions}</strong><span>Bumps</span></div></div><div id="submission-status" class="board-status">${won ? token ? "Submit your arrival to today's casual board with a generated nickname. No account needed." : escapeHtml(networkNotice || "This run is unranked. Public ranking is unavailable.") : "Your next island escape is one tap away."}</div><div class="modal-actions">${won && token ? '<button id="submit-score" class="primary">Add my island arrival</button>' : ""}<button id="retry" class="${won && token ? "secondary" : "primary"}">Catch another ferry</button><button id="result-board" class="secondary">Today's arrivals</button><button id="return-home" class="text-button">Change character or pace</button>${won ? '<button id="share" class="text-button">Share the adventure</button>' : ""}</div>`);
-  if (submittedName) $("#submission-status").textContent = `Your arrival is on the board as ${submittedName}. Enjoy that island breeze.`;
+  showModal("result", `<div class="eyebrow">${won ? "YOU MADE IT TO TORONTO ISLAND" : "EVERY COMMUTER HAS THOSE DAYS"}</div><h2 id="modal-title">${won ? "Hello, island time." : "One more little hop?"}</h2><p>${won ? "The skyline's behind you. The whole afternoon's ahead." : "A little bump in the road. Pick yourself up and try the trip again."}</p><div class="modal-stat-grid"><div><strong>${formatTime(run.elapsed)}</strong><span>Active time</span></div><div><strong>${won ? run.lives : `${Math.floor(run.maxRow / MODES[mode].rows * 100)}%`}</strong><span>${won ? "Lives left" : "Route reached"}</span></div><div><strong>${run.collisions}</strong><span>Bumps</span></div></div><div id="result-status" class="board-status">${won ? resultNotice : "Your next island escape is one tap away."}</div><div class="modal-actions"><button id="retry" class="primary">Catch another ferry</button><button id="result-board" class="secondary">Local leaderboard</button><button id="return-home" class="text-button">Change character or pace</button>${won ? '<button id="share" class="text-button">Share the adventure</button>' : ""}</div>`);
   $("#retry").onclick = startRun; $("#return-home").onclick = home;
   $("#result-board").onclick = () => showBoard(mode);
-  if ($("#submit-score")) $("#submit-score").onclick = submitScore;
   if ($("#share")) $("#share").onclick = async () => {
     const url = new URL("./", location.href).href;
     try {
       if (navigator.share) await navigator.share({ title: "Union to Island", text: "A little hop. A big Toronto adventure.", url });
       else { await navigator.clipboard.writeText(url); $("#share").textContent = "Game link copied"; }
-    } catch (error) { if (error.name !== "AbortError") $("#submission-status").textContent = `Couldn't share automatically. Copy this address: ${url}`; }
+    } catch (error) { if (error.name !== "AbortError") $("#result-status").textContent = `Couldn't share automatically. Copy this address: ${url}`; }
   };
 }
 
-async function submitScore() {
-  const button = $("#submit-score");
-  const status = $("#submission-status");
-  button.disabled = true; button.textContent = "Adding your arrival...";
-  try {
-    const result = await api("scores", { token, elapsed: Math.round(run.elapsed * 1000), collisions: run.collisions, lives: run.lives, completedRow: run.maxRow });
-    submittedName = result.nickname;
-    status.textContent = `You're on the board as ${result.nickname}. Enjoy that island breeze.`;
-    button.textContent = "Arrival added"; token = null;
-  } catch (error) {
-    status.textContent = `Not submitted: ${error.message}. Your local result is still here.`;
-    button.disabled = false; button.textContent = "Retry submission";
-  }
-}
-
-async function showBoard(selectedMode = mode) {
+function showBoard(selectedMode = mode) {
   if (active) { active = false; buffer = null; }
-  const request = ++boardSequence;
-  showModal("board", `<div class="eyebrow">A LITTLE FRIENDLY COMPETITION</div><h2 id="modal-title">Today's island arrivals.</h2><p class="board-note">Toronto time. Fastest winning trips, by pace. Generated nicknames, no login, no prizes.</p><div class="board-tabs">${Object.entries(MODES).map(([id, value]) => `<button data-board="${id}" class="${id === selectedMode ? "selected" : ""}" aria-pressed="${id === selectedMode}">${value.label}</button>`).join("")}</div><div class="board-status" id="board-status">Checking the ferry manifest...</div><ol class="board-list" id="board-list"></ol><p class="board-note">Basic checks deter abuse; this is not a verified prize leaderboard.</p><button class="secondary" id="board-back">${run && !ended ? "Back to your trip" : "Back to the adventure"}</button>`);
+  const entries = leaderboard.entries(selectedMode);
+  const best = prefs[`best-${selectedMode}`];
+  showModal("board", `<div class="eyebrow">YOUR ISLAND ARRIVALS</div><h2 id="modal-title">Local leaderboard.</h2><p class="board-note">Fastest winning trips on this browser, by pace. Scores are not shared with other players.</p><div class="board-tabs">${Object.entries(MODES).map(([id, value]) => `<button data-board="${id}" class="${id === selectedMode ? "selected" : ""}" aria-pressed="${id === selectedMode}">${value.label}</button>`).join("")}</div><div class="board-status" id="board-status"></div><ol class="board-list" id="board-list"></ol><p class="board-note">Clearing browser data or switching browsers removes access to these scores.</p><button class="secondary" id="board-back">${run && !ended ? "Back to your trip" : "Back to the adventure"}</button>`);
   document.querySelectorAll("[data-board]").forEach(button => button.onclick = () => showBoard(button.dataset.board));
   $("#board-back").onclick = () => { if (run && !ended) showResume(); else if (run) finishResultAgain(); else closeModal(); };
-  try {
-    const result = await api(`leaderboard?mode=${selectedMode}`);
-    if (request !== boardSequence || modalKind !== "board") return;
-    $("#board-status").textContent = result.entries.length ? `${result.day} \u00b7 ${MODES[selectedMode].label} \u00b7 Top ${result.entries.length}` : "The island is quiet. Be the first arrival today!";
-    for (const [i, item] of result.entries.entries()) {
-      const li = document.createElement("li"); const rank = document.createElement("b"); const name = document.createElement("span"); const time = document.createElement("time");
-      rank.textContent = String(i + 1).padStart(2, "0"); name.textContent = item.nickname; time.textContent = formatTime(item.elapsed / 1000);
-      li.append(rank, name, time); $("#board-list").append(li);
-    }
-  } catch (error) { if (request === boardSequence && modalKind === "board") $("#board-status").textContent = `Public board unavailable: ${error.message}. You can still play.`; }
+  const summary = entries.length ? `${MODES[selectedMode].label} \u00b7 Top ${entries.length}` : `No ${MODES[selectedMode].label} trips on this leaderboard yet. Reach the island to add one!`;
+  const bestMilliseconds = Math.round(best * 1000);
+  const previousBest = Number.isSafeInteger(bestMilliseconds) && bestMilliseconds > 0 ? ` Personal best: ${formatScore(bestMilliseconds)}.` : "";
+  $("#board-status").textContent = `${summary}${previousBest}${leaderboard.persistent ? "" : " Browser storage is unavailable; scores last for this visit only."}`;
+  for (const [i, item] of entries.entries()) {
+    const li = document.createElement("li"); const rank = document.createElement("b"); const details = document.createElement("span"); const name = document.createElement("strong"); const meta = document.createElement("small"); const time = document.createElement("time");
+    rank.textContent = String(i + 1).padStart(2, "0");
+    name.textContent = CHARACTERS.find(character => character.id === item.character).name;
+    const date = new Date(item.completedAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+    meta.textContent = `${date} \u00b7 ${item.collisions} ${item.collisions === 1 ? "bump" : "bumps"}`;
+    time.textContent = formatScore(item.elapsed);
+    details.append(name, meta); li.append(rank, details, time); $("#board-list").append(li);
+  }
 }
 function finishResultAgain() { renderResult(); }
 $("#open-board").onclick = () => showBoard();
-$("#about").onclick = () => showModal("about", `<div class="eyebrow">SMALL GAME. OPEN SKIES.</div><h2 id="modal-title">Made for a little escape.</h2><div class="privacy-copy"><p>Union to Island is an original Toronto crossing game. Kit, Ducky, Bolt, and Ace are original developer-themed characters inspired by the friendly spirit of GitHub-style mascots. They are not GitHub, Octocat, or Crossy Road characters. No affiliation or endorsement is implied.</p><p>Sound and illustrations are generated in the browser. No external fonts, ads, analytics, location permission, or sign-in.</p><p>Settings and personal bests stay in this browser when storage is available. If you choose to submit a winning run, the public board stores a generated nickname, difficulty, time, collisions, and remaining lives. Results become eligible for removal after 30 days and are deleted during maintenance.</p><p>The server uses short-lived hashed network identifiers to limit abuse. Hosting providers may retain standard request/security logs under their own policies. Don't enter personal information; nicknames are generated for you.</p><p>Route times are targets, not deadlines. This is a compressed arcade map, not walking directions. First-time loading and public scores need internet.</p></div>`);
+$("#about").onclick = () => showModal("about", `<div class="eyebrow">SMALL GAME. OPEN SKIES.</div><h2 id="modal-title">Made for a little escape.</h2><div class="privacy-copy"><p>Union to Island is an original Toronto crossing game. Kit, Ducky, Bolt, and Ace are original developer-themed characters inspired by the friendly spirit of GitHub-style mascots. They are not GitHub, Octocat, or Crossy Road characters. No affiliation or endorsement is implied.</p><p>Sound and illustrations are generated in the browser. No external fonts, ads, analytics, location permission, or sign-in.</p><p>Settings and leaderboard scores stay in this browser when storage is available. Scores are not uploaded or shared. Clearing browser data removes them; private browsing may not retain them.</p><p>The hosting provider may retain standard request or security logs under its own policies. Route times are targets, not deadlines. This is a compressed arcade map, not walking directions. Loading the game needs internet.</p></div>`);
 
 function updateHud() {
   if (!run) return;
