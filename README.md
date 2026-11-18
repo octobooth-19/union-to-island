@@ -12,6 +12,10 @@ vendor carts for a shield or an extra life; board the ferry to win.
 
 **Live (free, GitHub Pages):** <https://octobooth-19.github.io/union-to-island/>
 
+Scan with your phone, or click the image to play:
+
+[![QR code to play Union to Island](./union-to-island-qr.png)](https://octobooth-19.github.io/union-to-island/)
+
 The `.github/workflows/pages.yml` workflow republishes `public/` on every push
 to `main`. The leaderboard is stored in each player's browser; it is not
 shared between players or devices. No Cloudflare account or backend is needed.
